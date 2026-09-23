@@ -37,16 +37,12 @@ jobs:
           PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
           DJANGO_VERSION: ${{ matrix.DJANGO_VERSION }}
 
-      # Only the coverage upload needs a Python on the runner itself - the
-      # actual Django tests above never leave the container.
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
       - name: Upload coverage to Codecov
-        run: |
-          pip install -q codecov
-          codecov -f tests/coverage.xml
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: tests/coverage.xml
+          fail_ci_if_error: false
 
   lint:
     runs-on: ubuntu-latest
