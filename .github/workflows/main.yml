@@ -25,60 +25,32 @@ jobs:
         PYTHON_VERSION: [ '3.10', '3.11', '3.12', '3.13' ]
         DJANGO_VERSION: [ '5.2.*' ]
 
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - uses: actions/checkout@v4
 
+      # docker-compose.yml owns the whole test setup (Postgres + install +
+      # migrate + test), same as `make test` locally - this just parametrizes
+      # the Python/Django versions the matrix varies.
+      - name: Run tests via docker compose
+        run: docker compose run --rm tests
+        env:
+          PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
+          DJANGO_VERSION: ${{ matrix.DJANGO_VERSION }}
+
+      # Only the coverage upload needs a Python on the runner itself - the
+      # actual Django tests above never leave the container.
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.PYTHON_VERSION }}
+          python-version: '3.12'
 
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ hashFiles('pyproject.toml') }}-${{ hashFiles('tests/requirements.txt') }}-${{ matrix.PYTHON_VERSION }}-${{ matrix.DJANGO_VERSION }}
-
-      - name: Install
+      - name: Upload coverage to Codecov
         run: |
-           pip install -q -e .
-           pip install -q --upgrade --upgrade-strategy eager -r tests/requirements.txt
-           pip install -q "Django==${{ matrix.DJANGO_VERSION }}"
-           pip install codecov
+          pip install -q codecov
+          codecov -f tests/coverage.xml
 
-      - name: Testing
-        run: |
-          cd tests
-          python manage.py makemigrations
-          python manage.py migrate
-          coverage run manage.py test ajax_datatable
-          coverage xml && codecov
-        env:
-          # This job uses GitHub Actions' "services:" mechanism (a sibling
-          # container reachable via the runner's localhost + mapped port), not
-          # docker-compose - so the Postgres host here is localhost, not the
-          # service name "postgres" that docker-compose.yml uses locally.
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install
-        run: pip install flake8
-      - name: Running Flake8
-        run: flake8
+      - name: Run flake8 via docker compose
+        run: docker compose run --rm lint
