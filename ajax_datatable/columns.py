@@ -102,7 +102,7 @@ class Column(object):
     def render_column_value(self, obj, value):
 
         if self._allow_choices_lookup:
-            #return self._choices_lookup[value]
+            # return self._choices_lookup[value]
             return self.string_tags_in_case(self._choices_lookup.get(value, ''))
 
         if isinstance(value, datetime.datetime):
@@ -126,7 +126,7 @@ class Column(object):
         # return [matching_value for key, matching_value in
         # six.iteritems(self._search_choices_lookup) if key.startswith(value)]
         values = []
-        if type(pattern_list) != list:
+        if not isinstance(pattern_list, list):
             pattern_list = [pattern_list]
         for pattern in pattern_list:
             pattern = pattern.lower()
@@ -226,7 +226,6 @@ class ForeignColumn(Column):
 class ManyToManyColumn(ForeignColumn):
 
     def get_foreign_value(self, obj):
-        current_value = obj
         m2m_name, m2m_field = self._field_path
 
         to_eval = f'obj.{m2m_name}_list'
@@ -243,6 +242,7 @@ class ManyToManyColumn(ForeignColumn):
 
         return ', '.join([str(value) for value in value_list])
 
+
 class ColumnLink(object):
 
     def __init__(self, name, model_column=None, searchable='true', orderable='true', search_value='',
@@ -252,7 +252,7 @@ class ColumnLink(object):
             """
             accept either string or boolean
             """
-            if type(value) == str:
+            if isinstance(value, str):
                 return value == "true"
             return value
 

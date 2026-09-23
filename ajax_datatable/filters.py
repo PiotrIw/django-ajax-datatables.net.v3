@@ -47,14 +47,13 @@ def build_column_filter(column_name, column_obj, column_spec, search_value, glob
         except ValueError:
             # when the value entered so far is not a valid date,
             # let's clear the table content to give a feedback to the user
-            parsed_date = datetime.date(1,1,1)
+            parsed_date = datetime.date(1, 1, 1)
         date_range = [parsed_date.isoformat(), parsed_date.isoformat()]
         query_param_name = column_obj.get_field_search_path()
         if isinstance(column_obj.model_field, models.DateTimeField):
             search_filter = Q(**{query_param_name + '__date__range': date_range})
         else:
             search_filter = Q(**{query_param_name + '__range': date_range})
-
 
     # elif isinstance(column_obj.model_field, models.ManyToManyField):
     #     # query_param_name = column_obj.get_field_search_path()
@@ -70,7 +69,7 @@ def build_column_filter(column_name, column_obj, column_spec, search_value, glob
 
         # See: "How do I do an OR filter in a Django query?"
         # https://stackoverflow.com/questions/739776/how-do-i-do-an-or-filter-in-a-django-query
-        if type(search_value) == list:
+        if isinstance(search_value, list):
             search_filter = Q()
             for item in search_value:
                 search_filter |= Q(**{query_param_name + lookup_field: item})

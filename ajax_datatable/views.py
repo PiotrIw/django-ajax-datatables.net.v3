@@ -105,7 +105,7 @@ class AjaxDatatableView(View):
                 'autofilter': False,
                 'boolean': False,
                 'max_length': 0,
-                #'lookup_field': '__icontains',
+                # 'lookup_field': '__icontains',
                 'lookup_field': None,  # postponed default value assignement
             }
 
@@ -339,7 +339,7 @@ class AjaxDatatableView(View):
         values = []
         keys = list(self.column_index.keys())
         for position, direction in initial_order:
-            if type(position) == str:
+            if isinstance(position, str):
 
                 if position == 'id' and self._id_column_renamed_as_pk:
                     position = 'pk'
