@@ -7,7 +7,7 @@ test:
 	docker compose down
 
 lint:
-	flake8
+	docker compose run --rm lint
 
 build:
 	python -m build

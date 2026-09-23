@@ -57,7 +57,7 @@ From the **repository root** (the build needs both ``ajax_datatable/`` and
 ``demo/`` in its context)::
 
     docker build -f demo/Dockerfile -t ajax-datatable-demo .
-    docker run --rm -p 8000:8000 ajax-datatable-demo
+    docker run --rm --name ajax-datatable-demo -p 8000:8000 ajax-datatable-demo
 
 Or, from inside ``demo/``: ``make demo`` (runs both steps above; ``make stop`` to stop it).
 
@@ -68,16 +68,6 @@ The container runs migrations and loads the bundled fixture (``backend/fixtures/
 inside the container, so data resets when the container is removed. That's
 intentional - this is a demo, not a persistent deployment.
 
-Run without Docker
--------------------
+Optional: create a superuser to browse ``/admin/``, via the running container::
 
-::
-
-    pip install -e ..
-    pip install -r requirements.txt
-    python manage.py migrate
-    python manage.py loaddata backend/fixtures/tracks.json.gz
-    python manage.py runserver
-
-Optional: create a superuser (``python manage.py createsuperuser``) to browse
-``/admin/``.
+    docker exec -it ajax-datatable-demo python manage.py createsuperuser
