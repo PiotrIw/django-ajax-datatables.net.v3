@@ -65,7 +65,11 @@ jobs:
           coverage run manage.py test ajax_datatable
           coverage xml && codecov
         env:
-          POSTGRES_HOST: postgres
+          # This job uses GitHub Actions' "services:" mechanism (a sibling
+          # container reachable via the runner's localhost + mapped port), not
+          # docker-compose - so the Postgres host here is localhost, not the
+          # service name "postgres" that docker-compose.yml uses locally.
+          POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
   lint:
     runs-on: ubuntu-latest
