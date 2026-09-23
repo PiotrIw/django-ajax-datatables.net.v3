@@ -59,6 +59,8 @@ From the **repository root** (the build needs both ``ajax_datatable/`` and
     docker build -f demo/Dockerfile -t ajax-datatable-demo .
     docker run --rm -p 8000:8000 ajax-datatable-demo
 
+Or, from inside ``demo/``: ``make demo`` (runs both steps above; ``make stop`` to stop it).
+
 Then open http://localhost:8000/
 
 The container runs migrations and loads the bundled fixture (``backend/fixtures/tracks.json.gz``,
