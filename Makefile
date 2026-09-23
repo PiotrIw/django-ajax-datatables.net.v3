@@ -1,8 +1,4 @@
-.PHONY: install test lint build demo stop clean
-
-install:
-	pip install -e .
-	pip install -r tests/requirements.txt
+.PHONY: test lint build demo stop clean
 
 # Runs against a Postgres service via docker compose, same as CI (see
 # .github/workflows/main.yml and docker-compose.yml).
