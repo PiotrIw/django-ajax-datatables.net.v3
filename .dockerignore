@@ -1,0 +1,11 @@
+.git
+**/__pycache__
+**/*.pyc
+*.egg-info
+build
+dist
+db.sqlite3
+demo/public
+demo/db.sqlite3
+example
+example_minimal

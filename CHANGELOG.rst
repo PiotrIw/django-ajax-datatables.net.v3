@@ -1,0 +1,408 @@
+.. :changelog:
+
+History
+=======
+
+v1.0.0
+------
+* Forked from `PiotrIw/django-ajax-datatable <https://github.com/PiotrIw/django-ajax-datatable>`_
+  @ v4.6.1 (upstream: `morlandi/django-ajax-datatable <https://github.com/morlandi/django-ajax-datatable>`_)
+  and rewritten to target **datatables.net v3**, which dropped its jQuery dependency
+* jQuery and Bootstrap dropped entirely, both from the library's own JS
+  (`ajax_datatable/static/ajax_datatable/js/utils.js`) and from the demo app
+* The server-side protocol (`AjaxDatatableView`, `column_defs`, app settings) is
+  unchanged - it was already stable across DataTables 1.x/2.x/3.x. Breaking changes
+  are confined to the client JS: `initialize_table()` now takes a CSS selector string
+  or DOM node instead of a jQuery object, and table events (`rowCallback`, etc.) are
+  now native `CustomEvent`\ s carrying their payload in `event.detail` instead of
+  jQuery `.trigger()`/`.on()` extra arguments
+* Fixed two DataTables-v3-specific incompatibilities surfaced by the migration:
+  `searchCols` entries with a `null` search value (the server's existing wire format)
+  now throw in DataTables v3's own handling unless coerced to `''` client-side; and
+  DataTables v3's default (non-jQuery) styling wraps the table in `.dt-container`
+  rather than the `.dataTables_wrapper` used by 1.x/2.x
+  (`ajax_datatable/static/ajax_datatable/css/style.css` updated to match)
+* Packaging modernized to `pyproject.toml`; Python floor raised to 3.10, Django floor
+  to 5.2; distribution renamed to `django-ajax-datatables-net-v3` (the importable
+  Python package stays `ajax_datatable`, unchanged)
+* The two example apps (`example/`, `example_minimal/`) were merged into one
+  dockerized `demo/` app (no Bootstrap, no jQuery, no npm/Node build step)
+* See `MIGRATE_FROM_V4_TO_V1_CHECKLIST.rst <MIGRATE_FROM_V4_TO_V1_CHECKLIST.rst>`_ for
+  the full migration guide
+
+v4.6.1
+------
+* Fixed the global date range filter raising `AssertionError` (that is: a 500) whenever
+  `latest_by` is not one of the declared columns. Since `latest_by` falls back to the
+  model's `Meta.get_latest_by`, which has no reason to name a visible column, the
+  From/To toolbar was shown and then failed as soon as it was used;
+  `filter_queryset_by_date_range()` now looks the field up on the model when the columns
+  do not know about it
+
+v4.6.0
+------
+* Fixed date column filtering, broken by Django 5.0 removing the `USE_L10N` setting:
+  `format_datetime()` fell back to rendering dates in the neutral format while
+  `parse_date()` kept reading them with the input formats of the active locale, so
+  filtering a date column returned the wrong day (or nothing at all) in most languages
+* Both sides now follow the new `AJAX_DATATABLE_USE_L10N` setting, which defaults to
+  `True`, that is to the behaviour of a Django project before 5.0; set it to `False` to
+  render and read dates in the neutral format instead
+* `parse_date()` tries the very format used for rendering first, and falls back to
+  `DATE_INPUT_FORMATS`. The 14 locales (out of the 83 shipped by Django) whose
+  `SHORT_DATE_FORMAT` holds a translated month name - `tr`, `th`, `sl`, ... - can only
+  be filtered through their input formats, since strptime reads month names in the C
+  locale only
+* Beware: on Django <= 4.2 the new default is a visible change for projects which set
+  `USE_L10N = False`, since dates were rendered in the neutral format there; add
+  `AJAX_DATATABLE_USE_L10N = False` to keep them that way
+* Packaging: the wheel no longer ships a top level `tests` package, no longer claims to
+  support Python 2, declares `python_requires` and fixes the license classifier (MIT,
+  which is what LICENSE says and always said)
+
+v4.5.0
+------
+* Skip `filter_queryset_by_date_range` (that is: ignore `date_from` and `date_to` from requests params)
+  when `show_date_filters` is disabled
+
+v4.4.5
+------
+* Remove pytz since it's deprecated in Django 4.0 and will be removed in Django 5.0
+
+v4.4.4
+------
+* few changes to allow the initialization of a DatatableView offline (for example, to export a filtered queryset from a background process)
+
+v4.4.3
+------
+* assign '__iexact', instead of '__icontains', as default 'lookup_field' value for columns with choices
+* added toolbar_message(): same as footer_message(), but appends message to toolbar
+
+v4.4.2
+------
+* fix: searching on a date/datetime field: when the value entered is not a valid date, we clear the table content to give a feedback to the user
+
+v4.4.1
+------
+* fix: when STRIP_HTML_TAGS is active, None was rendered as 'None' instead of ''
+
+v4.4.0
+------
+* Prepare for Django 4.0
+* Support choice lookup for m2m_foreign_field (many thanks to Martin Schwier and Etienne Pouliot)
+* Fix Multiple search values when you set search_values_separator = '+' and try to search for term with + in it (many thanks to Petr Dlouhý)
+* POSSIBLE INCOMPATIBLE CHANGE: for security reason, HTML tags are now stripped by default in the rendered table; you can disable this setting AJAX_DATATABLE_STRIP_HTML_TAGS = False (thus restoring the previous behaviour); many thanks to Mich "Mike3285"
+
+v4.3.1
+------
+* Add custom lookup field; thanks to Javier Clavero Álvarez <jclaveroalvarez@gmail.com>
+
+v4.3.0
+------
+* Add support for ManyToMany field (many thanks to Etienne Pouliot); REQUIRES PYTHON 3.6
+* POSSIBLE INCOMPATIBLE CHANGE: PYTHON >= 3.6 REQUIRED
+* Fix #35: prevent ZeroDivisionError
+
+v4.2.1
+------
+* Example project cleanup
+* Added "side filters" sample
+* Readme updated
+
+v4.2.0
+------
+* deliver extra_data to render_row_details()
+* Allow to set detail callback, i.e. to display it in modal (thanks to `PetrDlouhy <https://github.com/PetrDlouhy>`_)
+* Fetch 'csrfmiddlewaretoken' when csrftoken cookie is set to HttpOnly (thanks to `shuki25 <https://github.com/shuki25>`_)
+
+v4.1.7
+------
+* Allow to set order field for column (thanks Petr Dlouhý)
+
+v4.1.6
+------
+
+* Unused template 'datatable.html' removed.
+* Fix issues #2 and #8
+* Fix issue #9
+* Raise an exception when searching over a ManyToManyField (not supported yet)
+
+v4.1.5
+------
+* Edit button example
+* Better row-tools style (fix for Firefox)
+
+v4.1.4
+------
+* foreign_fields: render with __str__() if no attribute has been specified by 'foreign_field'
+* [fix] added missing csrftoken header in first POST call (initialize_table())
+* selectively disable the `only` or `select_related` queryset optimization
+
+v4.1.3
+------
+* Filters: proper lookup choices for foreign columns
+* search_in_choices(): match substring instead of startswith()
+* Filter tracing: serialize with DjangoJSONEncoder
+
+v4.1.2
+------
+* pass "extra_data" during table initialization
+
+v4.1.1
+------
+* [fix] Restore capability to use both global and column filtering at the same time
+* improved tracing (optionally uses sqlparse, termcolor and pygments)
+
+v4.1.0
+------
+* Avoid duplicate column names
+* Add a border to "plus" and "minus" icons
+* Readme: added an example on how to use extra_data for initial queryset filtering
+* Improved layout of global date filters for easier style customization
+* Explicitly check field existence when initial order is expressed with fieldnames
+* Cleanup full_row_select option
+* [fix] Treat DateTimeField properly in filter_queryset_by_date_range()
+* App settings for debug tracing renamed
+
+v4.0.8
+------
+* Recover missing commits from develp
+
+v4.0.7
+------
+* [TODO] check for unwanted side-effects here: ...
+* ... Prevent click to move the HTML page to the top
+* Improved example project
+
+v4.0.6
+------
+* Accept the more generic "pk" column name instead of "id"; "id" still supported for backward compatibility
+* In the example project: a new page has been added to play with a model with a custom PK column name
+
+v4.0.5
+------
+* classifiers added to setup.py
+
+v4.0.4
+------
+* fix Readme
+
+v4.0.3
+------
+* [fix] accept anonymous POSTs
+* Another (this time really minimal) example working project
+
+v4.0.2
+------
+* overridable `render_row_details_template_name` attribute added
+* support to search multiple values (see `search_values_separator`)
+
+v4.0.1
+------
+* A few typo fixes here and there
+
+v4.0.0
+------
+* package renamed from `django-datatables-view` to `django-ajax-datatable`
+* published on PyPI
+* example project added
+* setup of demo site `http://django-ajax-datatable-demo.brainstorm.it`
+
+v3.2.3
+------
+* "data-parent-row-id" attribute added to details row
+
+v3.2.2
+------
+* accept positions expressed as column names in initial_order[]
+
+v3.2.1
+------
+* add className to filters
+* improved filtering with choices by including foreign_fields
+* optional "boolean" column attribute to treat calculated column as booleans on explicit request
+* optional "max_length" column attribute to clip results
+
+v3.2.0
+------
+* Automatic addition of table row ID (see `get_table_row_id()`)
+* `request` parameter added to `prepare_results()` and `get_response_dict()`
+
+v3.1.4
+------
+* fix checkbox and radio buttons not working in a form embedded in the details row when full_row_select is active
+
+v3.1.3
+------
+* Better behaviour for full_row_select
+
+v3.1.2
+------
+* `initialSearchValue` can now be a value or a callable object
+
+v3.1.1
+------
+* Silly JS fix
+
+v3.1.0
+------
+* choices / autofilter support for column filters
+* optional *initialSearchValue* for column filters
+* **Backward incompatible change**: any unrecognized column_defs attribute will raises an exception
+
+v3.0.4
+------
+* Support length_menu = -1 (which means: "all")
+
+v3.0.3
+------
+* Use `full_row_select=true` to toggled row details by clicking anywhere in the row
+
+v3.0.2
+------
+* Sanity check for initial_order[]
+
+v3.0.1
+------
+* js fix (same as v2.3.5)
+
+v3.0.0
+------
+* Bump major version to welcome Django 3
+
+v2.3.5
+------
+* js fix
+
+v2.3.4
+------
+* Add support for Django 3.0, drop Python 2
+
+v.2.3.3
+-------
+* Some JS utilities added
+
+v2.3.2
+------
+* improved queryset optimization
+
+v2.3.1
+------
+* fix queryset optimization
+
+v2.3.0
+------
+* queryset optimization
+
+v2.2.9
+------
+* optional extra_data dictionary accepted by initialize_table()
+
+v2.2.8
+------
+* Remove `table-layout: fixed;` style from HTML table, as this causes problems in the columns' widths computation
+
+v2.2.7
+------
+* Explicitly set width of "row tools" column
+* Localize "search" prompt in column filters
+
+v2.2.6
+------
+* Experimental: Optionally control the (minimum) width of each single column
+
+v2.2.5
+------
+* cleanup
+
+v2.2.4
+------
+* optionally specified extra options to initialize_table()
+
+v2.2.3
+------
+* accept language options
+
+v2.2.2
+------
+* fix default footer
+
+v2.2.1
+------
+* README revised
+
+v2.2.0
+------
+* Merge into master
+
+v2.1.3
+------
+* Remove initialize_datatable() from main project and replace with DatatablesViewUtils.initialize_table() to share common behaviour
+* Notify Datatable subscribers with various events
+* Cleanup global filtering on dates range
+* Derived view class can now specify 'latest_by' when different from model.get_latest_by
+* Documentation revised
+
+v2.1.2
+------
+* basic support for DateField and DateTimeField filtering (exact date match)
+
+v2.1.1
+------
+* choices lookup revised
+
+v2.1.0
+------
+* `static/datatables_view/js/datatables_utils.js` renamed as `static/datatables_view/js/utils.js`
+* js helper encapsulated in DatatablesViewUtils module
+* First "almost" working column filtering - good enought for text search
+
+v2.0.6
+------
+* Accept either GET or POST requests
+
+v2.0.5
+------
+* Global "get_latest_by" filtering improved
+
+v2.0.4
+------
+* Filter tracing (for debugging)
+
+v2.0.0
+------
+* DatatablesView refactoring: columns_specs[] used as a substitute for columns[],searchable_columns[] and foreign_fields[]
+
+v1.2.4
+------
+* recognize datatime.date column type
+
+v1.2.3
+------
+* render_row_details() passes model_admin to the context, to permit fieldsets navigation
+
+v1.2.2
+------
+* generic tables explained
+* render_row_details customizable via templates
+
+v1.2.1
+------
+* merged PR #1 from Thierry BOULOGNE
+
+v1.2.0
+------
+* Incompatible change: postpone column initialization and pass the request to get_column_defs() for runtime table layout customization
+
+v1.0.1
+------
+* fix choices lookup
+
+v1.0.0
+------
+* fix search
+* better distribution (make sure templates and statics are included)
+
+v0.0.2
+------
+* Package version added

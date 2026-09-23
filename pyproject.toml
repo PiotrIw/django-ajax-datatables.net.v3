@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-ajax-datatables-net-v3"
+description = "Helper class to integrate Django with datatables.net v3, jQuery-free and Bootstrap-free"
+authors = [
+    {name = "Piotr Iwanski", email = "piotr.iwanski@gmail.com"},
+]
+license = "MIT"
+requires-python = ">=3.10"
+dynamic = ["version", "readme"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.2",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "Django>=5.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/PiotrIw/django-ajax-datatables-net-v3"
+"Based on" = "https://github.com/morlandi/django-ajax-datatable"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+include = ["ajax_datatable*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "ajax_datatable.__version__"}
+readme = {file = ["README.rst", "CHANGELOG.rst"], content-type = "text/x-rst"}
