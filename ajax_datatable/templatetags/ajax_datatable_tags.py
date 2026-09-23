@@ -81,8 +81,10 @@ def ifhasperm(parser, token):
     """
 
     # Separating the tag name from the parameters
+    bits = token.contents.split()
+    tag = bits[0] if bits else 'ifhasperm'
     try:
-        tag, model, action = token.contents.split()
+        tag, model, action = bits
     except (ValueError, TypeError):
         raise template.TemplateSyntaxError(
             "'%s' tag takes three parameters" % tag)

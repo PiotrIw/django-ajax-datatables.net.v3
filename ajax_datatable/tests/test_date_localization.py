@@ -20,6 +20,9 @@ class DateFormatToStrptimeTestCase(unittest.TestCase):
         # anything which is not a specifier stays literal, CJK included
         self.assertEqual(date_format_to_strptime('Y年n月j日'), '%Y年%m月%d日')
 
+    def test_a_literal_percent_sign_is_escaped(self):
+        self.assertEqual(date_format_to_strptime('Y%'), '%Y%%')
+
     def test_month_names_cannot_be_converted(self):
         # 'M' and 'F' render a translated month name: strptime matches month
         # names in the C locale only, so we decline the conversion
@@ -28,6 +31,21 @@ class DateFormatToStrptimeTestCase(unittest.TestCase):
 
     def test_escaped_formats_are_declined(self):
         self.assertIsNone(date_format_to_strptime(r'd \d\i m'))
+
+
+class FormatDatetimeTestCase(unittest.TestCase):
+
+    def test_none_renders_as_empty_string(self):
+        self.assertEqual(format_datetime(None), '')
+
+    def test_naive_datetime_is_made_aware(self):
+        # timezone.localtime() raises ValueError on a naive datetime; the
+        # naive-input case (e.g. a value that bypassed USE_TZ handling)
+        # falls back to timezone.make_aware() instead of propagating that
+        naive = datetime.datetime(2026, 3, 7, 12, 30)
+        self.assertIsNone(naive.tzinfo)
+        result = format_datetime(naive, include_time=True)
+        self.assertIn('12:30:00', result)
 
 
 class DateRoundTripTestCase(unittest.TestCase):
