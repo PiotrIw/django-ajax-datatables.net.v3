@@ -16,7 +16,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Framework :: Django",
-    "Framework :: Django :: 4.2",
     "Framework :: Django :: 5.2",
     "Intended Audience :: Developers",
     "Natural Language :: English",
@@ -28,7 +27,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "Django>=5.2",
+    "Django>=5.2,<6.0",
 ]
 
 [project.urls]
