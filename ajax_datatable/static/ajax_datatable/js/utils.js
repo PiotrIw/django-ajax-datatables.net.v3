@@ -461,7 +461,7 @@ window.AjaxDatatableViewUtils = (function() {
                 scrollX: true,
                 autoWidth: true,
                 dom: '<"toolbar">lrftip',
-                language: _options.language,
+                language: _options.language || {},
                 full_row_select: false,
                 // language: {
                 //     "decimal":        "",
