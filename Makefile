@@ -4,10 +4,11 @@ install:
 	pip install -e .
 	pip install -r tests/requirements.txt
 
-# Requires a Postgres reachable at POSTGRES_HOST:POSTGRES_PORT (default localhost:5432,
-# user/password "postgres"); see tests/test_settings.py.
+# Runs against a Postgres service via docker compose, same as CI (see
+# .github/workflows/main.yml and docker-compose.yml).
 test:
-	cd tests && python manage.py makemigrations && python manage.py migrate && python manage.py test ajax_datatable
+	docker compose run --rm tests
+	docker compose down
 
 lint:
 	flake8

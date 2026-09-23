@@ -1,5 +1,4 @@
-# -*- coding: utf-8
-from __future__ import unicode_literals, absolute_import
+import os
 
 DEBUG = True
 USE_TZ = True
@@ -10,12 +9,11 @@ SECRET_KEY = "77777777777777777777777777777777777777777777777777"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'postgres',  # Or path to database file if using sqlite3.
-        'USER': 'postgres',  # Not used with sqlite3.
-        'PASSWORD': 'postgres',  # Not used with sqlite3.
-        'HOST': 'localhost',  # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '5432',  # Set to empty string for default. Not used with sqlite3.
+        'NAME': os.environ.get('POSTGRES_DB', 'postgres'),
+        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
 
