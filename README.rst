@@ -2,6 +2,9 @@
 django-ajax-datatables-net-v3
 ==============================
 
+.. image:: https://codecov.io/gh/PiotrIw/django-ajax-datatables.net.v3/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/PiotrIw/django-ajax-datatables.net.v3
+
 **django-ajax-datatables-net-v3** is a Django app which provides advanced integration for a Django project with DataTables.net,
 when used in server-side processing mode.
 
