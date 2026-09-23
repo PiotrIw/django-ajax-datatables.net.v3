@@ -448,13 +448,13 @@ class AjaxDatatableView(View):
             fields = [f.name for f in self.model._meta.get_fields() if f.concrete]
             html = '<table class="row-details">'
             for field in fields:
-                if field in prefetchs:
-                    value = ', '.join([str(x) for x in eval(f'obj.{field}').all()])
-                else:
-                    try:
+                try:
+                    if field in prefetchs:
+                        value = ', '.join([str(x) for x in eval(f'obj.{field}').all()])
+                    else:
                         value = getattr(obj, field)
-                    except AttributeError:
-                        continue
+                except AttributeError:
+                    continue
                 html += '<tr><td>%s</td><td>%s</td></tr>' % (field, value)
             html += '</table>'
         return html
