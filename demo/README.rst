@@ -16,6 +16,40 @@ Pages:
 * ``/side_filters/`` - a sidebar of plain HTML inputs driving the queryset via
   ``extra_data`` callables, plus the default date-range toolbar widget.
 
+Layout
+------
+
+::
+
+    demo/
+    ├── manage.py
+    ├── requirements.txt
+    ├── Dockerfile
+    ├── entrypoint.sh              # migrate + loaddata + runserver, used by the Docker image
+    ├── demo_project/              # Django project settings
+    │   ├── settings.py
+    │   ├── urls.py
+    │   └── wsgi.py
+    ├── backend/                   # models: Tag, Tag2, Artist, Album, Track, CustomPk
+    │   ├── models.py
+    │   ├── admin.py
+    │   ├── migrations/
+    │   └── fixtures/tracks.json.gz    # seed data (~4700 rows)
+    └── frontend/                  # views + templates that exercise the library
+        ├── ajax_datatable_views.py    # AjaxDatatableView subclasses (one per page/table)
+        ├── views.py
+        ├── urls.py
+        ├── query_debugger.py
+        ├── static/frontend/css/frontend.css
+        └── templates/
+            ├── base.html           # loads DataTables v3 from its CDN, ajax_datatable's JS/CSS
+            ├── navbar.html
+            └── frontend/
+                ├── track/list.html     # "/" - Track/Album/Artist tables
+                ├── minimal.html        # "/minimal/" - Permission model
+                ├── custompk/list.html  # "/custompks/" - non-"id" primary key
+                └── side_filters.html   # "/side_filters/" - extra_data + date-range widget
+
 Run with Docker
 ----------------
 
