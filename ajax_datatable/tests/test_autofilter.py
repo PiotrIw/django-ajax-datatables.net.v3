@@ -67,6 +67,73 @@ class UserDatatablesWithEmptyColumnNameView(AjaxDatatableView):
     ]
 
 
+class UserAutofilterBadMaxLengthView(AjaxDatatableView):
+    """ A non-int max_length breaks list_autofilter_choices() internally. """
+    model = User
+    column_defs = [
+        AjaxDatatableView.render_row_tools_column_def(),
+        {
+            'name': 'id',
+            'visible': False,
+        }, {
+            'name': 'first_name',
+            'choices': True,
+            'autofilter': True,
+            'max_length': None,
+        }
+    ]
+
+
+class UserAutofilterWithInitialSearchValueView(AjaxDatatableView):
+    """ initialSearchValue not among the distinct values must be appended. """
+    model = User
+    column_defs = [
+        AjaxDatatableView.render_row_tools_column_def(),
+        {
+            'name': 'id',
+            'visible': False,
+        }, {
+            'name': 'first_name',
+            'choices': True,
+            'autofilter': True,
+            'initialSearchValue': 'ZzNotARealFirstName',
+        }
+    ]
+
+
+class UserAutofilterDateJoinedView(AjaxDatatableView):
+    """ Autofilter over a date field takes a different choices-formatting path. """
+    model = User
+    column_defs = [
+        AjaxDatatableView.render_row_tools_column_def(),
+        {
+            'name': 'id',
+            'visible': False,
+        }, {
+            'name': 'date_joined',
+            'choices': True,
+            'autofilter': True,
+        }
+    ]
+
+
+class UserAutofilterClippedChoicesView(AjaxDatatableView):
+    """ A positive max_length clips each autofilter choice's label. """
+    model = User
+    column_defs = [
+        AjaxDatatableView.render_row_tools_column_def(),
+        {
+            'name': 'id',
+            'visible': False,
+        }, {
+            'name': 'first_name',
+            'choices': True,
+            'autofilter': True,
+            'max_length': 3,
+        }
+    ]
+
+
 class UserFactory(factory.django.DjangoModelFactory):
 
     class Meta:
@@ -123,3 +190,37 @@ class AutoFilterTestCase(TestCase):
         view = UserDatatablesWithEmptyColumnNameView()
         with self.assertRaisesRegex(Exception, 'Duplicate column name "" detected'):
             view.initialize(request)
+
+    def test_autofilter_choices_exception_is_caught(self):
+        """
+        list_autofilter_choices() wraps its body in a try/except; a bad
+        max_length (compared with '<= 0') is a convenient way to trigger it
+        without mocking anything.
+        """
+        request = None
+        view = UserAutofilterBadMaxLengthView()
+        view.initialize(request)
+        self.assertIsNone(view.column_spec_by_name('first_name')['choices'])
+
+    def test_autofilter_appends_missing_initial_search_value(self):
+        request = None
+        view = UserAutofilterWithInitialSearchValueView()
+        view.initialize(request)
+        choices = view.column_spec_by_name('first_name')['choices']
+        self.assertIn(('ZzNotARealFirstName', 'ZzNotARealFirstName'), choices)
+
+    def test_autofilter_over_date_field(self):
+        request = None
+        view = UserAutofilterDateJoinedView()
+        view.initialize(request)
+        choices = view.column_spec_by_name('date_joined')['choices']
+        self.assertTrue(len(choices) > 0)
+
+    def test_autofilter_clips_long_choice_labels(self):
+        request = None
+        view = UserAutofilterClippedChoicesView()
+        view.initialize(request)
+        choices = view.column_spec_by_name('first_name')['choices']
+        for value, label in choices:
+            if len(value) > 3:
+                self.assertTrue(label.endswith('…'))

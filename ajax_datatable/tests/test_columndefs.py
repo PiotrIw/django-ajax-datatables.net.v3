@@ -73,3 +73,17 @@ class TestColumnDefs(TestCase):
             self.assertEqual(user.username, row['username'])
             self.assertEqual(user.first_name, row['first_name'])
             self.assertEqual(user.last_name, row['last_name'])
+
+    def test_get_response_dict_clamps_out_of_range_page(self):
+        view = UserAjaxDatatableView()
+        queryset = view.get_initial_queryset()
+        paginator = Paginator(queryset, per_page=10)
+        view.initialize(None)
+
+        # start_pos way past the last record: page_id > paginator.num_pages
+        response_dict = view.get_response_dict(None, paginator, draw_idx=0, start_pos=100000)
+        self.assertEqual(len(response_dict['data']), 10)  # clamped to the last page
+
+        # a negative start_pos: page_id < 1
+        response_dict = view.get_response_dict(None, paginator, draw_idx=0, start_pos=-100)
+        self.assertEqual(len(response_dict['data']), 10)  # clamped to the first page

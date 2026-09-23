@@ -31,6 +31,15 @@ class TestModelWithHiddenLatestBy(models.Model):
         get_latest_by = "-created"
 
 
+class TestModelWithDateFieldLatestBy(models.Model):
+    published = models.DateField()
+    one = models.CharField(max_length=20)
+
+    class Meta:
+        app_label = 'myappname2'
+        get_latest_by = "published"
+
+
 class DatatablesWithoutLatestByView(AjaxDatatableView):
     model = TestModelWithoutLatestBy
 
@@ -45,6 +54,7 @@ class DatatablesWithLatestByView(AjaxDatatableView):
             'visible': False,
         }, {
             'name': 'one',
+            'className': 'existing-class',  # 'latest_by' must be appended, not overwrite this
         }, {
             'name': 'two',
         }
@@ -69,6 +79,29 @@ class DatatablesForceFilterView(AjaxDatatableView):
 
     def get_show_date_filters(self, request):
         return True
+
+
+class DatatablesWithDateFieldLatestByView(AjaxDatatableView):
+    model = TestModelWithDateFieldLatestBy
+
+    column_defs = [
+        {
+            'name': 'id',
+            'visible': False,
+        }, {
+            'name': 'published',
+        }, {
+            'name': 'one',
+        }
+    ]
+
+
+class DatatablesWithListLatestByView(AjaxDatatableView):
+    model = TestModelWithoutLatestBy
+
+    def get_latest_by(self, request):
+        # get_latest_by() may return a list/tuple, as Meta.get_latest_by does
+        return ['one']
 
 
 class DateFiltersTestCase(unittest.TestCase):
@@ -116,3 +149,24 @@ class DateFiltersTestCase(unittest.TestCase):
         self.assertEqual([c.lookup_name for c in conditions], ['gte', 'lte'])
         for condition in conditions:
             self.assertIsInstance(condition.lhs, TruncDate)
+
+    def test_date_range_filter_with_plain_date_field(self):
+        """
+        A plain DateField latest_by (as opposed to DateTimeField) must not go
+        through the DateTimeField-only TruncDate comparison.
+        """
+        view = DatatablesWithDateFieldLatestByView()
+        view.initialize(None)
+
+        qs = view.filter_queryset_by_date_range(
+            '2026-01-01', '2026-01-31', TestModelWithDateFieldLatestBy.objects.all())
+
+        conditions = qs.query.where.children
+        self.assertEqual([c.lookup_name for c in conditions], ['gte', 'lte'])
+        for condition in conditions:
+            self.assertNotIsInstance(condition.lhs, TruncDate)
+
+    def test_get_latest_by_accepts_a_list(self):
+        view = DatatablesWithListLatestByView()
+        view.initialize(None)
+        self.assertEqual(view.latest_by, 'one')

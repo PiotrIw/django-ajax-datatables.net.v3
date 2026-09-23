@@ -15,6 +15,9 @@ class TestModel(models.Model):
     f5 = models.CharField(max_length=20, choices=F5_CHOICES)
     f6 = models.CharField(max_length=20)
     f7 = models.CharField(max_length=20)
+    f8_bool = models.BooleanField(default=False)
+    f9_bool_nullable = models.BooleanField(null=True)
+    f10_as_bool = models.CharField(max_length=5)
 
     class Meta:
         app_label = 'myappname'
@@ -54,6 +57,19 @@ class TestAjaxDatatableView(AjaxDatatableView):
             # Copy from field's choices if any (not found)
             'name': 'f6',
             'choices': True,
+        }, {
+            # Non-nullable BooleanField: plain Yes/No choices
+            'name': 'f8_bool',
+            'choices': True,
+        }, {
+            # Nullable BooleanField: choices are prefixed with a blank/None entry
+            'name': 'f9_bool_nullable',
+            'choices': True,
+        }, {
+            # Not a BooleanField, but flagged as one: same Yes/No choices
+            'name': 'f10_as_bool',
+            'choices': True,
+            'boolean': True,
         }
     ]
 
@@ -80,3 +96,10 @@ class ChoicesFiltersTestCase(unittest.TestCase):
         self.assertSequenceEqual(TestAjaxDatatableView.F4_CHOICES, view.column_spec_by_name('f4')['choices'])
         self.assertSequenceEqual(TestModel.F5_CHOICES, view.column_spec_by_name('f5')['choices'])
         self.assertEqual(None, view.column_spec_by_name('f6')['choices'])
+
+        self.assertSequenceEqual(
+            [(True, 'Yes'), (False, 'No')], view.column_spec_by_name('f8_bool')['choices'])
+        self.assertSequenceEqual(
+            [(None, ''), (True, 'Yes'), (False, 'No')], view.column_spec_by_name('f9_bool_nullable')['choices'])
+        self.assertSequenceEqual(
+            [(True, 'Yes'), (False, 'No')], view.column_spec_by_name('f10_as_bool')['choices'])
