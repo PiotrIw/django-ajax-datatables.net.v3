@@ -5,15 +5,27 @@ rest of the suite never does: every other test module instantiates the view
 and calls its helper methods directly, bypassing dispatch() entirely.
 """
 import json
+import os
+import tempfile
 
-from unittest import TestCase
+from unittest import TestCase, mock
 
 import factory
 import factory.random
 from django.contrib.auth import get_user_model
-from django.test import RequestFactory
+from django.test import RequestFactory, override_settings
 
 from ajax_datatable import AjaxDatatableView
+
+
+class _StubAdminSite:
+    """
+    django.contrib.admin isn't in this test project's INSTALLED_APPS, so
+    admin.site._registry can't be touched at all without it - stub the
+    singleton out rather than pull the whole admin app in just for this.
+    """
+    def __init__(self, registry=None):
+        self._registry = registry or {}
 
 
 User = get_user_model()
@@ -207,6 +219,36 @@ class ViewHttpTestCase(TestCase):
         self.assertEqual(payload['parent-row-id'], str(user.pk))
         self.assertIn(user.username, payload['html'])
 
+    def test_details_action_with_custom_template(self):
+        user = self.users[0]
+        with tempfile.TemporaryDirectory() as template_root:
+            template_dir = os.path.join(template_root, 'ajax_datatable')
+            os.makedirs(template_dir)
+            with open(os.path.join(template_dir, 'render_row_details.html'), 'w') as f:
+                f.write('<div class="custom-details">{{ object.username }}</div>')
+
+            templates_setting = [{
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'DIRS': [template_root],
+                'APP_DIRS': True,
+            }]
+            with override_settings(TEMPLATES=templates_setting), \
+                    mock.patch('django.contrib.admin.site', _StubAdminSite()):
+                response = self._get(HttpUserView, {'action': 'details', 'pk': str(user.pk)})
+
+        self.assertEqual(response.status_code, 200)
+        payload = json.loads(response.content)
+        self.assertIn('custom-details', payload['html'])
+        self.assertIn(user.username, payload['html'])
+
+    def test_details_action_for_missing_object_falls_back_gracefully(self):
+        # no row matches this pk: getattr(None, field) raises AttributeError
+        # for every field, which the fallback table-builder must swallow
+        response = self._get(HttpUserView, {'action': 'details', 'pk': '999999999'})
+        self.assertEqual(response.status_code, 200)
+        payload = json.loads(response.content)
+        self.assertIn('<table class="row-details">', payload['html'])
+
     def test_non_ajax_request_is_rejected_by_dispatch(self):
         # dispatch() itself gates on request.accepts("application/json"); the
         # non-JSON branch is an unfinished "render_table" placeholder (see the
@@ -306,3 +348,12 @@ class ViewHttpTestCase(TestCase):
         view = HttpUserView()
         self.assertEqual(view.clip_value('short', 10, False), 'short')
         self.assertEqual(view.clip_value('a-long-piece-of-text', 5, False), 'a-lon…')
+
+    def test_get_model_admin(self):
+        view = HttpUserView()
+        with mock.patch('django.contrib.admin.site', _StubAdminSite()):
+            self.assertIsNone(view.get_model_admin())
+
+        fake_model_admin = object()
+        with mock.patch('django.contrib.admin.site', _StubAdminSite({User: fake_model_admin})):
+            self.assertIs(view.get_model_admin(), fake_model_admin)
