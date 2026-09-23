@@ -1,11 +1,11 @@
 .PHONY: install test lint build demo stop clean
 
-# Requires a Postgres reachable at POSTGRES_HOST:POSTGRES_PORT (default localhost:5432,
-# user/password "postgres"); see tests/test_settings.py.
 install:
 	pip install -e .
 	pip install -r tests/requirements.txt
 
+# Requires a Postgres reachable at POSTGRES_HOST:POSTGRES_PORT (default localhost:5432,
+# user/password "postgres"); see tests/test_settings.py.
 test:
 	cd tests && python manage.py makemigrations && python manage.py migrate && python manage.py test ajax_datatable
 
