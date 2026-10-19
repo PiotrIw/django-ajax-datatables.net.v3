@@ -122,3 +122,17 @@ table.dataTable .row-details td {
 
 div.dataTables_sort_wrapper {white-space:nowrap !important;}
 th {white-space:nowrap !important;}
+
+/*
+    a11y_mode (opt-in, see AjaxDatatableViewUtils.initialize_table()'s extra_options):
+    DataTables.net's own ".dt-column-order" sort control renders at 8x14px, under the
+    24x24px / adequate-spacing WCAG 2.5.8 (AA) target-size minimum. Enlarge its
+    clickable hit area via padding rather than resizing the visible sort-arrow glyph
+    (drawn via its own :before/:after and unaffected by this). box-sizing is forced to
+    content-box so the padding reliably *adds* to the rendered size even on a host page
+    that resets box-sizing to border-box (e.g. Bootstrap's "*, *::before, *::after").
+*/
+.a11y-mode .dt-column-order {
+    box-sizing: content-box;
+    padding: 0 8px;
+}

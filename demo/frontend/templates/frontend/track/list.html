@@ -25,6 +25,14 @@
 
     <h3>Artists</h3>
 
+    <p>
+    This table uses <code>scrollX: true</code> plus <code>a11y_mode: true</code> (an
+    extra_options flag, not passed through to DataTables.net) to demonstrate the
+    accessibility remediations it applies: an enlarged hit area on the column-sort
+    controls, a labelled search input, and a corrected ARIA table structure for the
+    horizontal-scroll wrapper.
+    </p>
+
     <div class="table-responsive">
         <table id="datatable-artist" width="100%" class="table table-striped table-bordered dt-responsive compact nowrap">
         </table>
@@ -72,7 +80,9 @@
                     processing: false,
                     autoWidth: false,
                     full_row_select: false,
-                    scrollX: false
+                    scrollX: true,
+                    // a11y_mode (example): see README.rst's "Accessibility (a11y_mode)" section
+                    a11y_mode: true
                 }, {}
             );
         });

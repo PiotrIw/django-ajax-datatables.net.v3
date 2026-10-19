@@ -3,6 +3,17 @@
 History
 =======
 
+v1.1.0
+------
+* Added an opt-in `a11y_mode` flag to `AjaxDatatableViewUtils.initialize_table()`'s
+  `extra_options` (consumed by the library, never forwarded to DataTables.net's own
+  options) that remediates three accessibility issues in DataTables.net's own rendered
+  markup: an undersized column-sort-control hit area (WCAG 2.5.8), invalid ARIA roles
+  on the `scrollX: true` horizontal-scroll wrapper (WCAG 1.3.1/4.1.1 - axe-core's
+  `aria-allowed-attr`/`aria-required-children`), and a search input left without a
+  real accessible name (WCAG 3.3.2/4.1.2). With the flag false or omitted (the
+  default), output is unchanged. See README.rst's "Accessibility (a11y_mode)" section
+
 v1.0.0
 ------
 * Forked from `PiotrIw/django-ajax-datatable <https://github.com/PiotrIw/django-ajax-datatable>`_

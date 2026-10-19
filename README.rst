@@ -273,6 +273,42 @@ AjaxDatatableViewUtils.initialize_table() parameters are:
         see: `Provide "extra data" to narrow down the initial queryset`_
 
 
+Accessibility (a11y_mode)
+--------------------------
+
+Passing ``a11y_mode: true`` as part of ``extra_options`` opts a table into a set of
+post-init accessibility remediations for issues in DataTables.net's own rendered
+markup. The flag is consumed by ``initialize_table()`` itself and is never forwarded
+to DataTables.net's own options.
+
+.. code:: javascript
+
+    AjaxDatatableViewUtils.initialize_table(
+        '#datatable',
+        "{% url 'frontend:ajax_datatable_permissions' %}",
+        {
+            scrollX: true,
+            a11y_mode: true
+        }
+    );
+
+With ``a11y_mode: true``:
+
+- the column-sort controls (``.dt-column-order``) get a larger clickable hit area
+  (WCAG 2.5.8 Target Size), via an opt-in ``a11y-mode`` CSS class rather than a
+  change to default styling;
+- with ``scrollX: true``, the ARIA roles DataTables.net adds to its horizontal-scroll
+  wrapper (``role="table"``/``role="none"``) are corrected so the three split
+  ``<table>`` elements it produces (head/body/foot) each expose valid native table
+  semantics instead of conflicting ARIA overrides (WCAG 4.1.1/1.3.1, via axe-core's
+  ``aria-allowed-attr``/``aria-required-children`` rules);
+- the search input is given a real accessible name tied to its visible label text, if
+  one isn't already present (WCAG 3.3.2 / 4.1.2).
+
+With ``a11y_mode`` false or omitted (the default), none of the above applies and
+output is unchanged.
+
+
 AjaxDatatableView Class attributes
 ----------------------------------
 
